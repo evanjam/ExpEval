@@ -1,0 +1,164 @@
+//evaluate infix method. tested and working with following examples:
+//(5 + 2) * 3 = 21.0
+//((5 * 2) - 2) ^ 2 = 64.0
+
+//never got it working with in class example:
+//(3 * (4 + 2 * (6 - 4) + 1) + 2 ^ 3) / 5 = 7.0
+
+//luckily my infixToPostfix and evalPostfix are working with that one!! so fuck it!! who fucking evaluates infix anyway??? right???
+
+static double evalInfix(String exp) 	//reads from left to right, "Djikstra" 2 stack method
+    {        
+		Stack2<Character> A = new Stack2<Character>(); //operator stack
+        Stack2<Double> B = new Stack2<Double>(); //operand stack
+        
+        int last = exp.length() - 1;
+        
+        for(int i = 0; i < exp.length(); i++)
+        {
+        	char c = exp.charAt(i);
+        	if(c == ' ')
+        	{
+        		last --;
+				continue;
+        	}
+        	else if(isOperand(c))
+        	{
+        		B.push((double) Character.getNumericValue(c));
+        		last--;
+			}
+        	else if(c == '(')
+        	{
+        		A.push(c);
+        		last--;
+        	}
+        	else if(isOperator(c))
+        	{
+        		if(A.getSize() == 0)
+        		{
+        			A.push(c);
+        			last--;
+        		}
+        		if(priLvl(c) > priLvl(A.getTop()))
+        		{
+        			A.push(c);
+        			last--;
+        		}
+        		else
+        		{
+        			while(priLvl(c) < priLvl(A.getTop()))
+        			{
+        				double a = B.pop();
+        				double b = B.pop();
+        				char op = A.pop();
+        				B.push(compute(op, a, b));
+        			}
+        		}
+        	}
+        	else if(c == ')')
+        	{
+        		char temp = A.getTop();
+        		while(temp != '(')
+        		{
+        			double a = B.pop();
+        			double b = B.pop();
+        			char op = A.pop();
+        			B.push(compute(op, a, b));
+        			temp = A.getTop();
+        		}
+        		A.pop();
+        		last--;
+        	}
+        }
+        if(last == -1)
+        {
+        	while(A.getSize() > 0)
+        	{
+        		double a = B.pop();
+        		double b = B.pop();
+        		char op = A.getTop();
+        		B.push(compute(op, a, b));
+        		A.pop();
+        	}
+        	
+        }
+        return B.pop();
+    }
+
+/**  static double evalInfix(String exp) 	//reads from right to left as per instr. document, not fully working implementation. never traced/figured out why.
+    { 
+        Stack2<Character> A = new Stack2<Character>(); //operator stack
+        Stack2<Double> B = new Stack2<Double>(); //operand stack
+        
+        int last = exp.length() - 1;
+        
+        for(int i = 0; i < exp.length(); i++)
+        {
+        	char c = exp.charAt(last);
+        	if(c == ' ')
+        	{
+        		last --;
+				continue;
+        	}
+        	else if(isOperand(c))
+        	{
+        		B.push((double) Character.getNumericValue(c));
+        		last--;
+			}
+        	else if(isOperator(c))
+        	{
+        		if(c == ')' )
+        		{
+        			A.push(c);
+        			last--;
+        		}
+        		else if(A.getSize() == 0)
+        		{
+        			A.push(c);
+        			last--;   			
+        		}
+        		else if(priLvl(c) > priLvl(A.getTop()))
+        		{
+        			A.push(c);
+        			last--;
+        		}
+        		else if(priLvl(c) <= priLvl(A.getTop())) //&& c != '(');
+        		{
+        				double a = B.pop();
+	        			double b = B.pop();
+	        			char op = A.getTop();
+	        			B.push(compute(op, a, b));
+	        			last--;
+        		}
+        	}
+        	else if(c == '(')
+        	{
+        		char temp = A.getTop();
+        		while(temp != ')')
+        		{
+        			double a = B.pop();
+        			double b = B.pop();
+        			char op = A.getTop();
+        			B.push(compute(op, a, b));
+        			A.pop();
+        			temp = A.getTop();
+        		}
+        		last--;
+        		A.pop();
+        	}
+        }
+        //recent
+        if(last == -1)
+        {
+        	while(A.getSize() > 0)
+        	{
+        		double a = B.pop();
+        		double b = B.pop();
+        		char op = A.getTop();
+        		B.push(compute(op, a, b));
+        		A.pop();
+        	}
+        	
+        } //end recent
+        return B.pop();
+    } **/
